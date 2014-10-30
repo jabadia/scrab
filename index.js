@@ -7,13 +7,33 @@ var scrap = require('scrap'),
 
 var loginUrl = 'https://sfjcabrini-mscj-madrid.micolegio.es/educamos/Login.aspx';
 var defaultUrl = 'https://sfjcabrini-mscj-madrid.micolegio.es/Educamos/default.aspx';
-var mensajesUrl = 'https://sfjcabrini-mscj-madrid.micolegio.es/Educamos/ajaxpro/educamos_mensajeria,webEducamos.ashx';
+var messagesUrl = 'https://sfjcabrini-mscj-madrid.micolegio.es/Educamos/ajaxpro/educamos_mensajeria,webEducamos.ashx';
+var oneMessageUrl = 'https://sfjcabrini-mscj-madrid.micolegio.es/Educamos/comunicaciones/';
 var cookieJar = request.jar();
 
 function preParseValue(body,cb)
 {
 	var html = JSON.parse(body).value;
 	cb(html);
+}
+
+function getMessage(url,cb)
+{
+	// console.log(url);
+	scrap({url: url, method: 'POST', jar:cookieJar}, function(err,$,code,html,resp)
+	{
+		var body = $('#cuerpoMensaje').text();
+		var matches = body.match(/(https:\/\/www.youtube.com\/watch\?v=[^\s]+)/g);
+
+		if( matches )
+		{
+			matches.forEach(function(m)
+			{
+				console.log(m);
+				cb(m);
+			})			
+		}
+	});
 }
 
 scrap({url:loginUrl, jar:cookieJar}, function(err,$)
@@ -49,33 +69,27 @@ scrap({url:loginUrl, jar:cookieJar}, function(err,$)
 		headers['X-AjaxPro-Method'] = 'listaMensajes';
 		var payload = '{"sControls":"<root><carpeta>1</carpeta><filtro></filtro><noLeidos>false</noLeidos><pagina>0</pagina><orden>fecha</orden><sentido>DESC</sentido></root>"}';
 
-		console.log("+");
-		scrap({url: mensajesUrl, preParse:preParseValue, method: 'POST', jar:cookieJar, headers:headers, body:payload}, function(err,$,code,html,resp)
+		// console.log("+");
+		scrap({url: messagesUrl, preParse:preParseValue, method: 'POST', jar:cookieJar, headers:headers, body:payload}, function(err,$,code,html,resp)
 		{
-			// console.log(err);
-			// console.log( $('#tbListaMensajes').text() );
-			// console.log(html);
+			var elements = $("tr td[onclick]");
+			var links = []
+			elements.each(function(index)
+			{	
+				if(index % 3 == 2)
+				{
+					var el = this;
+					var onclick = $(el).attr('onclick').trim();
+					var url = onclick.match(/location.href='(.+)'/)[1];
+					// console.log($(el).text(), "|", onclick,"|",url);
 
-			// $("td[onclick]").each(function (i, el)
-			// {
-			// 	console.log($(el).text(), $(el).attr('onclick'));
-			// });
-
-			// console.log("------------");
-			// console.log(err);
-			// console.log("------------");
-			// console.log(resp);
-			// console.log("------------");
-			// console.log(body);
-			// console.log("------------");
-
-			var elements = $("td[onclick]");
-			elements.each(function()
-			{		
-				var el = this;
-				console.log($(el).text(), "|", $(el).attr('onclick').trim());
+					getMessage( oneMessageUrl + url, function(link)
+					{
+						links.push(link);
+					});
+				}
 			});
-			console.log("-");
+			// console.log("-");
 		});
 	});
 });
