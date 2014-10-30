@@ -22,14 +22,21 @@ function getMessage(url,cb)
 	// console.log(url);
 	scrap({url: url, method: 'POST', jar:cookieJar}, function(err,$,code,html,resp)
 	{
+		var asunto = "";
+		$('.legendFicha').each(function(index)
+		{
+			if(this.text().match(/Asunto:/))
+			asunto = this.next2().text().trim();
+		})
 		var body = $('#cuerpoMensaje').text();
 		var matches = body.match(/(https:\/\/www.youtube.com\/watch\?v=[^\s]+)/g);
 
 		if( matches )
 		{
+			console.log(asunto);
 			matches.forEach(function(m)
 			{
-				console.log(m);
+				console.log("[" + m + "](" + m + ")");
 				cb(m);
 			})			
 		}
