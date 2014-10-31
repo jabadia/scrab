@@ -26,7 +26,7 @@ function getMessage(url,cb)
 		$('.legendFicha').each(function(index)
 		{
 			if(this.text().match(/Asunto:/))
-			asunto = this.next2().text().trim();
+			asunto = this.next(false).text().trim();
 		})
 		var body = $('#cuerpoMensaje').text();
 		var matches = body.match(/(https:\/\/www.youtube.com\/watch\?v=[^\s]+)/g);
