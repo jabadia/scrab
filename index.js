@@ -39,10 +39,23 @@ function getMessage(url,cb)
 			matches.forEach(function(m)
 			{
 				renderLink(m);
-				cb(m);
 			})			
 		}
+		cb('done');
 	});
+}
+
+function renderPageHeader()
+{
+	var header = "<!DOCTYPE html>";
+	header += "<html><meta charset='UTF-8'><body>";
+	console.log(header);
+}
+
+function renderPageFooter()
+{
+	var footer = "</body></html>";
+	console.log(footer);
 }
 
 function renderTitle(title)
@@ -82,19 +95,16 @@ scrap({url:loginUrl, jar:cookieJar}, function(err,$)
 
 	request.post({url:loginUrl, jar:cookieJar, form: form, headers:headers, followAllRedirects:true}, function(err,response,body)
 	{
-		// console.log(response.statusCode);
-		// console.log(body);
-
-		// ?idMensajesLeidos=1
-
 		headers['X-AjaxPro-Method'] = 'listaMensajes';
 		var payload = '{"sControls":"<root><carpeta>1</carpeta><filtro></filtro><noLeidos>false</noLeidos><pagina>0</pagina><orden>fecha</orden><sentido>DESC</sentido></root>"}';
 
-		// console.log("+");
 		scrap({url: messagesUrl, preParse:preParseValue, method: 'POST', jar:cookieJar, headers:headers, body:payload}, function(err,$,code,html,resp)
 		{
+			renderPageHeader();
+
 			var elements = $("tr td[onclick]");
-			var links = []
+			var links = [];
+			var remaining = 0;
 			elements.each(function(index)
 			{	
 				if(index % 3 == 2)
@@ -102,15 +112,17 @@ scrap({url:loginUrl, jar:cookieJar}, function(err,$)
 					var el = this;
 					var onclick = $(el).attr('onclick').trim();
 					var url = onclick.match(/location.href='(.+)'/)[1];
-					// console.log($(el).text(), "|", onclick,"|",url);
 
-					getMessage( oneMessageUrl + url, function(link)
+					remaining += 1;
+					getMessage( oneMessageUrl + url, function(done)
 					{
-						links.push(link);
+						remaining -= 1;
+
+						if( remaining == 0)
+							renderPageFooter();
 					});
 				}
 			});
-			// console.log("-");
 		});
 	});
 });
