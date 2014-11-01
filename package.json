@@ -9,7 +9,8 @@
   "author": "",
   "license": "BSD-2-Clause",
   "dependencies": {
-    "scrap": "~0.1.0",
-    "request": "~2.45.0"
+    "iconv-lite": "^0.4.4",
+    "request": "~2.45.0",
+    "scrap": "~0.1.0"
   }
 }

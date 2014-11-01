@@ -1,6 +1,7 @@
 "use strict";
 
 var scrap = require('scrap'),
+	iconv = require('iconv-lite'),
 	request = require('request');
 
 // request.debug = true;
@@ -11,6 +12,8 @@ var messagesUrl = 'https://sfjcabrini-mscj-madrid.micolegio.es/Educamos/ajaxpro/
 var oneMessageUrl = 'https://sfjcabrini-mscj-madrid.micolegio.es/Educamos/comunicaciones/';
 var cookieJar = request.jar();
 
+iconv.extendNodeEncodings();
+
 function preParseValue(body,cb)
 {
 	var html = JSON.parse(body).value;
@@ -19,8 +22,7 @@ function preParseValue(body,cb)
 
 function getMessage(url,cb)
 {
-	// console.log(url);
-	scrap({url: url, method: 'POST', jar:cookieJar}, function(err,$,code,html,resp)
+	scrap({url: url, method: 'POST', jar:cookieJar, encoding:'iso-8859-1'}, function(err,$,code,html,resp)
 	{
 		var asunto = "";
 		$('.legendFicha').each(function(index)
@@ -33,14 +35,26 @@ function getMessage(url,cb)
 
 		if( matches )
 		{
-			console.log(asunto);
+			renderTitle(asunto);
 			matches.forEach(function(m)
 			{
-				console.log("[" + m + "](" + m + ")");
+				renderLink(m);
 				cb(m);
 			})			
 		}
 	});
+}
+
+function renderTitle(title)
+{
+	var header = "<h1>" + title + "</h1>";
+	console.log(header);
+}
+
+function renderLink(href)
+{
+	var link = "<a href='" + href + "' target='_blank'>" + href + "</a><br>";
+	console.log(link);
 }
 
 scrap({url:loginUrl, jar:cookieJar}, function(err,$)
