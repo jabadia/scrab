@@ -20,7 +20,7 @@ function preParseValue(body,cb)
 	cb(html);
 }
 
-function getMessage(url,cb)
+function getMessage(url, date, cb)
 {
 	scrap({url: url, method: 'POST', jar:cookieJar, encoding:'iso-8859-1'}, function(err,$,code,html,resp)
 	{
@@ -35,7 +35,7 @@ function getMessage(url,cb)
 
 		if( matches )
 		{
-			renderTitle(asunto);
+			renderTitle(asunto, date);
 			matches.forEach(function(m)
 			{
 				renderLink(m);
@@ -58,9 +58,9 @@ function renderPageFooter()
 	console.log(footer);
 }
 
-function renderTitle(title)
+function renderTitle(title, date)
 {
-	var header = "<h1>" + title + "</h1>";
+	var header = "<h1>" + title + " <small>" + date + "</small></h1>";
 	console.log(header);
 }
 
@@ -112,9 +112,10 @@ scrap({url:loginUrl, jar:cookieJar}, function(err,$)
 					var el = this;
 					var onclick = $(el).attr('onclick').trim();
 					var url = onclick.match(/location.href='(.+)'/)[1];
+					var date = $(el).text();
 
 					remaining += 1;
-					getMessage( oneMessageUrl + url, function(done)
+					getMessage( oneMessageUrl + url, date, function(done)
 					{
 						remaining -= 1;
 
