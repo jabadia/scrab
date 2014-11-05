@@ -114,34 +114,40 @@ scrap({url:loginUrl, jar:cookieJar}, function(err,$)
 
 	request.post({url:loginUrl, jar:cookieJar, form: form, headers:headers, followAllRedirects:true}, function(err,response,body)
 	{
-		headers['X-AjaxPro-Method'] = 'listaMensajes';
-		var payload = '{"sControls":"<root><carpeta>1</carpeta><filtro></filtro><noLeidos>false</noLeidos><pagina>0</pagina><orden>fecha</orden><sentido>DESC</sentido></root>"}';
 
-		scrap({url: messagesUrl, preParse:preParseValue, method: 'POST', jar:cookieJar, headers:headers, body:payload}, function(err,$,code,html,resp)
+		renderPageHeader();
+		var remaining = 0;
+
+		var paginas = [1,2];
+
+		paginas.forEach(function(pagina)
 		{
-			renderPageHeader();
+			headers['X-AjaxPro-Method'] = 'listaMensajes';
+			var payload = '{"sControls":"<root><carpeta>1</carpeta><filtro></filtro><noLeidos>false</noLeidos><pagina>' + pagina + '</pagina><orden>fecha</orden><sentido>DESC</sentido></root>"}';
 
-			var elements = $("tr td[onclick]");
-			var links = [];
-			var remaining = 0;
-			elements.each(function(index)
-			{	
-				if(index % 3 == 2)
-				{
-					var el = this;
-					var onclick = $(el).attr('onclick').trim();
-					var url = onclick.match(/location.href='(.+)'/)[1];
-					var date = $(el).text();
-
-					remaining += 1;
-					getMessage( oneMessageUrl + url, date, function(done)
+			scrap({url: messagesUrl, preParse:preParseValue, method: 'POST', jar:cookieJar, headers:headers, body:payload }, function(err,$,code,html,resp)
+			{
+				var elements = $("tr td[onclick]");
+				var links = [];
+				elements.each(function(index)
+				{	
+					if(index % 3 == 2)
 					{
-						remaining -= 1;
+						var el = this;
+						var onclick = $(el).attr('onclick').trim();
+						var url = onclick.match(/location.href='(.+)'/)[1];
+						var date = $(el).text();
 
-						if( remaining == 0)
-							renderPageFooter();
-					});
-				}
+						remaining += 1;
+						getMessage( oneMessageUrl + url, date, function(done)
+						{
+							remaining -= 1;
+
+							if( remaining == 0)
+								renderPageFooter();
+						});
+					}
+				});
 			});
 		});
 	});
