@@ -30,11 +30,16 @@ function getMessage(url, date, cb)
 			if(this.text().match(/Asunto:/))
 			asunto = this.next(false).text().trim();
 		})
-		var body = $('#cuerpoMensaje').text();
-		var matches = body.match(/(https?:\/\/www.youtube.com\/watch\?v=[^\s]+)/g);		
+		var body = $('#cuerpoMensaje').html();
+		var matches = body.match(/(https?:\/\/www.youtube.com\/watch\?v=[^\s|\^"<]+)/g);
 
 		if( matches )
 		{
+			// make them unique
+			matches = matches.filter(function(item, pos) {
+	    		return matches.indexOf(item) == pos;
+			});
+
 			renderTitle(asunto, date);
 			matches.forEach(function(m)
 			{
@@ -47,26 +52,40 @@ function getMessage(url, date, cb)
 
 function renderPageHeader()
 {
-	var header = "<!DOCTYPE html>";
-	header += "<html><meta charset='UTF-8'><body>";
-	console.log(header);
+	var header = [];
+	header.push("<!DOCTYPE html>");
+	header.push("<html><meta charset='UTF-8'><body>");
+	header.push("<link rel='stylesheet' href='//maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css'>");
+	header.push("<link rel='stylesheet' href='style.css'>");
+	header.push("<body>");
+	header.push("<div class='container'>");
+	header.push("<div class='row'>");
+	header.push("<div class='col-md-8 col-md-offset-2'>");
+
+	console.log(header.join('\n'));
 }
 
 function renderPageFooter()
 {
-	var footer = "</body></html>";
-	console.log(footer);
+	var footer = [];
+	footer.push("</div>"); // col-md-
+	footer.push("</div>"); // row
+	footer.push("</div>");	// container
+	footer.push("</body></html>");
+	console.log(footer.join('\n'));
 }
 
 function renderTitle(title, date)
 {
-	var header = "<h1>" + title + " <small>" + date + "</small></h1>";
+	var header = "<h3>" + title + " <small>" + date + "</small></h3>";
 	console.log(header);
 }
 
 function renderLink(href)
 {
-	var link = "<a href='" + href + "' target='_blank'>" + href + "</a><br>";
+	//var link = "<a href='" + href + "' target='_blank'>" + href + "</a><br>";
+	var video_id = href.match(/https?:\/\/www.youtube.com\/watch\?v=([^\s]+)/)[1];
+	var link = "<a href='" + href + "' target='_blank'>" + "<img src='http://img.youtube.com/vi/" + video_id + "/default.jpg' />" + "</a>";
 	console.log(link);
 }
 
