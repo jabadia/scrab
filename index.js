@@ -31,7 +31,7 @@ function getMessage(url, date, cb)
 			asunto = this.next(false).text().trim();
 		})
 		var body = $('#cuerpoMensaje').text();
-		var matches = body.match(/(https:\/\/www.youtube.com\/watch\?v=[^\s]+)/g);
+		var matches = body.match(/(https?:\/\/www.youtube.com\/watch\?v=[^\s]+)/g);		
 
 		if( matches )
 		{
