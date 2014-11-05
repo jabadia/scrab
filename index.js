@@ -52,10 +52,12 @@ function getMessage(msg, callback)
 			});
 
 			output.push( renderTitle(asunto, date) );
+			output.push( "<div class='clearfix'>" );
 			matches.forEach(function(m)
 			{
 				output.push( renderLink(m) );
 			})			
+			output.push( "</div>" );
 		}
 		callback(null, output.join('\n'));
 	});
@@ -109,6 +111,8 @@ function renderPageFooter()
 	footer.push("</div>"); // col-md-
 	footer.push("</div>"); // row
 	footer.push("</div>");	// container
+	footer.push("<script src='//code.jquery.com/jquery-1.11.0.min.js'></script>");
+	footer.push("<script src='links.js'></script>");
 	footer.push("</body></html>");
 	console.log(footer.join('\n'));
 }
@@ -123,8 +127,12 @@ function renderLink(href)
 {
 	//var link = "<a href='" + href + "' target='_blank'>" + href + "</a><br>";
 	var video_id = href.match(/https?:\/\/www.youtube.com\/watch\?v=([^\s]+)/)[1];
-	var link = "<a href='" + href + "' target='_blank'>" + "<img src='http://img.youtube.com/vi/" + video_id + "/default.jpg' />" + "</a>";
-	return link;
+	var link = [];
+	link.push("<a class='thumbnail' href='" + href + "' target='_blank'>");
+	link.push("<img src='http://img.youtube.com/vi/" + video_id + "/default.jpg' />");
+	link.push("<span class='title'></span>");
+	link.push("</a>");
+	return link.join('\n');
 }
 
 

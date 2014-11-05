@@ -1,6 +1,22 @@
-img
+.thumbnail
 {
-	margin-right: 20px;
-	margin-bottom: 20px;
-	border: 0;
+	float: left;
+	margin-right: 10px;
+	width: 130px;
+}
+
+.clearfix
+{
+	clear: both;
+}
+
+.title
+{
+	font-size: 90%;
+	line-height: 0.8em;
+}
+
+a.thumbnail
+{
+	text-decoration: none;
 }
