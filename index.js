@@ -3,6 +3,7 @@
 var scrap = require('scrap'),
 	iconv = require('iconv-lite'),
 	async = require('async'),
+	secret = require('./secret'),
 	request = require('request');
 
 // request.debug = true;
@@ -150,8 +151,8 @@ scrap({url:loginUrl, jar:cookieJar}, function(err,$)
 		form[key] = val;
 	});
 
-	form.txtUserName = '';
-	form.txtUserPass = '';
+	form.txtUserName = secret.name;
+	form.txtUserPass = secret.pwd;
 	form.__EVENTTARGET = 'cmdLogin';
 	form.__EVENTARGUMENT = undefined;
 
