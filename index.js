@@ -2,6 +2,7 @@
 
 var scrap = require('scrap'),
 	iconv = require('iconv-lite'),
+	async = require('async'),
 	request = require('request');
 
 // request.debug = true;
@@ -12,6 +13,12 @@ var messagesUrl = 'https://sfjcabrini-mscj-madrid.micolegio.es/Educamos/ajaxpro/
 var oneMessageUrl = 'https://sfjcabrini-mscj-madrid.micolegio.es/Educamos/comunicaciones/';
 var cookieJar = request.jar();
 
+var headers = { 
+	'Referer': 'https://sfjcabrini-mscj-madrid.micolegio.es/Educamos/login.aspx',
+	'Origin': 'https://sfjcabrini-mscj-madrid.micolegio.es',
+	'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.124 Safari/537.36'
+};
+
 iconv.extendNodeEncodings();
 
 function preParseValue(body,cb)
@@ -20,8 +27,12 @@ function preParseValue(body,cb)
 	cb(html);
 }
 
-function getMessage(url, date, cb)
+function getMessage(msg, callback)
 {
+	var url = msg.url;
+	var date =msg.date;
+	var output = [];
+
 	scrap({url: url, method: 'POST', jar:cookieJar, encoding:'iso-8859-1'}, function(err,$,code,html,resp)
 	{
 		var asunto = "";
@@ -40,15 +51,42 @@ function getMessage(url, date, cb)
 	    		return matches.indexOf(item) == pos;
 			});
 
-			renderTitle(asunto, date);
+			output.push( renderTitle(asunto, date) );
 			matches.forEach(function(m)
 			{
-				renderLink(m);
+				output.push( renderLink(m) );
 			})			
 		}
-		cb('done');
+		callback(null, output.join('\n'));
 	});
 }
+
+function getPageMessages(pagina, callback)
+{
+	headers['X-AjaxPro-Method'] = 'listaMensajes';
+	var payload = '{"sControls":"<root><carpeta>1</carpeta><filtro></filtro><noLeidos>false</noLeidos><pagina>' + pagina + '</pagina><orden>fecha</orden><sentido>DESC</sentido></root>"}';
+
+	scrap({url: messagesUrl, preParse:preParseValue, method: 'POST', jar:cookieJar, headers:headers, body:payload }, function(err,$,code,html,resp)
+	{
+		var elements = $("tr td[onclick]");
+		var links = [];
+		elements.each(function(index)
+		{	
+			if(index % 3 == 2)
+			{
+				var el = this;
+				var onclick = $(el).attr('onclick').trim();
+				var url = onclick.match(/location.href='(.+)'/)[1];
+				var date = $(el).text();
+
+				links.push({ url: oneMessageUrl + url, date: date });
+			}
+		});
+		callback(null,links);
+	});	
+}
+
+/* output rendering */
 
 function renderPageHeader()
 {
@@ -78,7 +116,7 @@ function renderPageFooter()
 function renderTitle(title, date)
 {
 	var header = "<h3>" + title + " <small>" + date + "</small></h3>";
-	console.log(header);
+	return header;
 }
 
 function renderLink(href)
@@ -86,8 +124,11 @@ function renderLink(href)
 	//var link = "<a href='" + href + "' target='_blank'>" + href + "</a><br>";
 	var video_id = href.match(/https?:\/\/www.youtube.com\/watch\?v=([^\s]+)/)[1];
 	var link = "<a href='" + href + "' target='_blank'>" + "<img src='http://img.youtube.com/vi/" + video_id + "/default.jpg' />" + "</a>";
-	console.log(link);
+	return link;
 }
+
+
+/* main script */
 
 scrap({url:loginUrl, jar:cookieJar}, function(err,$)
 {
@@ -106,49 +147,28 @@ scrap({url:loginUrl, jar:cookieJar}, function(err,$)
 	form.__EVENTTARGET = 'cmdLogin';
 	form.__EVENTARGUMENT = undefined;
 
-	var headers = { 
-		'Referer': 'https://sfjcabrini-mscj-madrid.micolegio.es/Educamos/login.aspx',
-		'Origin': 'https://sfjcabrini-mscj-madrid.micolegio.es',
-		'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.124 Safari/537.36'
-	};
-
 	request.post({url:loginUrl, jar:cookieJar, form: form, headers:headers, followAllRedirects:true}, function(err,response,body)
 	{
-
 		renderPageHeader();
-		var remaining = 0;
 
 		var paginas = [1,2];
 
-		paginas.forEach(function(pagina)
+		async.map(paginas, getPageMessages, function(err,messages)
 		{
-			headers['X-AjaxPro-Method'] = 'listaMensajes';
-			var payload = '{"sControls":"<root><carpeta>1</carpeta><filtro></filtro><noLeidos>false</noLeidos><pagina>' + pagina + '</pagina><orden>fecha</orden><sentido>DESC</sentido></root>"}';
-
-			scrap({url: messagesUrl, preParse:preParseValue, method: 'POST', jar:cookieJar, headers:headers, body:payload }, function(err,$,code,html,resp)
+			messages = [].concat.apply([],messages);
+			
+			async.map(messages, getMessage, function(err,outputs)
 			{
-				var elements = $("tr td[onclick]");
-				var links = [];
-				elements.each(function(index)
-				{	
-					if(index % 3 == 2)
-					{
-						var el = this;
-						var onclick = $(el).attr('onclick').trim();
-						var url = onclick.match(/location.href='(.+)'/)[1];
-						var date = $(el).text();
+				//console.log(outputs.length);
 
-						remaining += 1;
-						getMessage( oneMessageUrl + url, date, function(done)
-						{
-							remaining -= 1;
-
-							if( remaining == 0)
-								renderPageFooter();
-						});
-					}
+				outputs.forEach(function(output)
+				{ 
+					if(output.length) 
+						console.log(output); 
 				});
-			});
+
+				renderPageFooter();
+			})
 		});
 	});
 });
