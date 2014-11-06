@@ -4,6 +4,7 @@ echo "###"
 echo "### cambiando de rama"
 echo "###"
 git checkout gh-pages
+git merge master
 echo "###"
 echo "### actualizando enlaces..."
 echo "###"
