@@ -3,10 +3,8 @@
 echo "###"
 echo "### cambiando de rama"
 echo "###"
-git stash
 git checkout gh-pages
-git stash apply
-git stash drop
+git merge master
 echo "###"
 echo "### actualizando enlaces..."
 echo "###"
@@ -22,3 +20,4 @@ git push origin gh-pages
 echo "###"
 echo "### ok"
 echo "###"
+git checkout master
