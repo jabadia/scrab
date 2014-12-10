@@ -1,21 +1,30 @@
 #!/bin/bash
 
 echo "###"
-echo "### cambiando de rama"
+echo "### cambiando de rama -> master"
 echo "###"
-git checkout gh-pages
-git merge master
+git checkout master
 echo "###"
 echo "### actualizando enlaces..."
 echo "###"
 node index.js > links.html
-echo "###"
-echo "### ok"
+git add links.html
+git commit -m "actualizados los links el `date +'%Y/%m/%d %H:%M'`"
 echo "###"
 echo "### subiendo los cambios"
 echo "###"
-git add links.html
-git commit -m "actualizados los links el `date +'%Y/%m/%d %H:%M'`"
+git push origin master
+echo "###"
+echo "### ok"
+echo "###"
+echo "###"
+echo "### cambiando de rama -> gh-pages"
+echo "###"
+git checkout gh-pages
+git merge master
+echo "###"
+echo "### subiendo los cambios"
+echo "###"
 git push origin gh-pages
 echo "###"
 echo "### ok"
