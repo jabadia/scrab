@@ -129,6 +129,7 @@ function renderLink(href)
 	//var link = "<a href='" + href + "' target='_blank'>" + href + "</a><br>";
 	var video_id = href.match(/https?:\/\/www.youtube.com\/watch\?v=([^\s]+)/)[1];
 	var link = [];
+	href = 'http://m.youtube.com/watch?v=' + video_id;
 	link.push("<a class='thumbnail' href='" + href + "' target='_blank'>");
 	link.push("<img src='http://img.youtube.com/vi/" + video_id + "/default.jpg' />");
 	link.push("<span class='title'></span>");

@@ -4,7 +4,7 @@ $(function()
 	{
 		var a = $(this);
 		var href = a.attr('href');
-		var video_id = href.match(/https?:\/\/www.youtube.com\/watch\?v=([^\s]+)/)[1];
+		var video_id = href.match(/https?:\/\/(www|m).youtube.com\/watch\?v=([^\s]+)/)[2];
 
 		$.ajax({
 			url: 'https://gdata.youtube.com/feeds/api/videos/' + video_id,
