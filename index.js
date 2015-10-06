@@ -53,7 +53,7 @@ function getMessage(msg, callback)
 			});
 
 			output.push( renderTitle(asunto, date) );
-			output.push( "<div class='clearfix'>" );
+			output.push( "<div>" );
 			matches.forEach(function(m)
 			{
 				output.push( renderLink(m) );

@@ -1,18 +1,12 @@
 .thumbnail
 {
-	float: left;
+	display: inline-block;
 	margin-right: 10px;
 	width: 130px;
 }
 
-.clearfix
-{
-	clear: both;
-}
-
 .title
 {
-	display: block;
 	margin-top: 3px;
 	font-size: 12px;
 	height: 7em;
