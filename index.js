@@ -165,7 +165,15 @@ scrap({url:loginUrl, jar:cookieJar}, function(err,$)
 
 		async.map(paginas, getPageMessages, function(err,messages)
 		{
-			messages = [].concat.apply([],messages);
+			// flatten array and filter
+			messages = [].concat.apply([],messages).filter(function(m)
+			{
+				var components = m.date.split(' ');
+				var c1 = components[0].split('/');
+				var c2 = components[1].split(':');
+				var date = new Date( c1[2], c1[1]-1, c1[0], c2[0], c2[1])
+				return date >= new Date(2015,8,1) // 01/Sep/2015
+			});			
 			
 			async.map(messages, getMessage, function(err,outputs)
 			{
